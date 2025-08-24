@@ -15,7 +15,7 @@ use bevy::{app::App, render::RenderApp};
 use image::{create_image, MandelbrotImage, RenderParams, RenderParamsResource};
 use pipeline::{MandelbrotNode, MandelbrotPipeline};
 
-const SIMULATION_SIZE: (u32, u32) = (1280, 720);
+const SIMULATION_SIZE: (u32, u32) = (1920, 1200);
 const WORKGROUP_SIZE: u32 = 8;
 // const DISPLAY_FACTOR: u32 = 4;
 
@@ -42,7 +42,11 @@ impl Plugin for GamePlugin {
 
         #[cfg(debug_assertions)]
         {
-            app.add_plugins((FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin::default()));
+            // app.add_plugins((FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin::default()));
+            app.add_plugins((
+                FrameTimeDiagnosticsPlugin::default(),
+                LogDiagnosticsPlugin::default(),
+            ));
         }
         let render_app = app.sub_app_mut(RenderApp);
 
@@ -63,8 +67,10 @@ impl Plugin for GamePlugin {
 fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>, window: Query<&Window>) {
     let window = window.single();
 
-    let width = window.resolution.width();
-    let height = window.resolution.height();
+    // let width = window.resolution.width();
+    let width = 1920_f32;
+    // let height = window.resolution.height();
+    let height = 1200_f32;
     // let width = SIMULATION_SIZE.0;
     // let height = SIMULATION_SIZE.1;
     let image = create_image(width as u32, height as u32);
@@ -90,7 +96,7 @@ fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>, window: Quer
             height: height as f64 * 10_f64 / width as f64,
             offset_x: 0_f64,
             offset_y: 0_f64,
-            iters: 100_f64,
+            iters: 200_f64,
         },
     });
 
@@ -113,11 +119,15 @@ fn update_params(
         match ev.unit {
             MouseScrollUnit::Line | MouseScrollUnit::Pixel => {
                 if ev.y > 0.0 {
-                    params.render_params.width *= 0.9;
+                    let position = window.cursor_position().unwrap();
+
+                    // params.render_params.offset_x *= position.x as f64 / window.width() as f64;
+                    // params.render_params.offset_y *= position.y as f64 / window.height() as f64;
+                    params.render_params.width *= 0.95;
                     params.render_params.height = params.render_params.height_pixels
                         * params.render_params.width
                         / params.render_params.width_pixels;
-                    params.render_params.iters += 2_f64;
+                    params.render_params.iters += 1.5_f64;
                     // if let Some(position) = window.cursor_position() {
                     //     let centered_pos_x =
                     //         position.x as f64 - params.render_params.width_pixels / 2_f64;
@@ -133,11 +143,11 @@ fn update_params(
                     //     // println!("Cursor is inside the primary window, at {:?}", position);
                     // }
                 } else if ev.y < 0.0 {
-                    params.render_params.width *= 1.1;
+                    params.render_params.width *= 1.05;
                     params.render_params.height = params.render_params.height_pixels
                         * params.render_params.width
                         / params.render_params.width_pixels;
-                    params.render_params.iters -= 2_f64;
+                    params.render_params.iters -= 1.5_f64;
                     // if let Some(position) = window.cursor_position() {
                     //     let centered_pos_x =
                     //         position.x as f64 - params.render_params.width_pixels / 2_f64;
